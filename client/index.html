@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Real-Time Chat</title>
+</head>
+
+<body>
+  <h1>Real-Time Messages</h1>
+  <div id="messages"></div>
+  <form id="messageForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="text" id="messageContent" placeholder="Message" required>
+    <button type="submit">Send</button>
+  </form>
+
+  <script>
+    // Connect to ActionCable WebSocket
+    const cable = new WebSocket("ws://127.0.0.1:3000/cable");
+
+    cable.onopen = () => {
+      console.log("Connected to ActionCable WebSocket")
+
+      const message = {
+        command: "subscribe",
+        identifier: JSON.stringify({ channel: "MessagesChannel" })
+      };
+
+      cable.send(JSON.stringify(message));
+    };
+
+    cable.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.type !== 'ping') {
+        console.log("Received data from server", data)
+      }
+
+    };
+
+    cable.onclose = () => {
+      console.log("Connection closed")
+    }
+
+    cable.onerror = (error) => {
+      console.log('WebSocket error observed:', error);
+    };
+  </script>
+</body>
+
+</html>
